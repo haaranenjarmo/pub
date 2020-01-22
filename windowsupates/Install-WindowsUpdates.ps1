@@ -1,6 +1,9 @@
 Function Install-CustomWindowsUpdates() {
     [CmdletBinding()]
-    param()
+    param(
+        [Parameter(Mandatory=$false, Position=0)][string]$LogPath = "C:\Logs"
+    )
+    $logPath = $LogPath.TrimEnd('\')
     $ErrorActionPreference = 'Stop'
     $StartTime = (Get-Date).ToUniversalTime().ToString('s')
     if($PSVersionTable.PSVersion.ToString() -ge "5.1"){
@@ -10,11 +13,11 @@ Function Install-CustomWindowsUpdates() {
                 Install-Module -Name PSWindowsUpdate
                 Set-PSRepository -Name PSGallery -InstallationPolicy Untrusted
             }
-            if($false -eq (Test-Path C:\logs)) {
-                New-Item -Name Logs -Path C:\ -ItemType Directory
+            if($false -eq (Test-Path $LogPath)) {
+                New-Item $LogPath -ItemType Directory
             }
             Import-Module -Name PSWindowsUpdate -ErrorAction Stop
-            Install-WindowsUpdate -AcceptAll -Install -AutoReboot | Out-File -Append "c:\logs\$(get-date -f yyyy-MM-dd)-WindowsUpdate.log" -force
+            Install-WindowsUpdate -AcceptAll -Install -AutoReboot | Out-File -Append "$LogPath\$(get-date -f yyyy-MM-dd)-WindowsUpdate.log" -force
             $result = New-Object psobject -Property (@{
                 Result = 'Ok'
                 Message = "Updates installed"
